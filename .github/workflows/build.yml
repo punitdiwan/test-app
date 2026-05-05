@@ -1,0 +1,39 @@
+  name: Build Next.js App
+
+  on:
+    push:
+      branches: [main]
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+
+      steps:
+        - uses: actions/checkout@v3
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v3
+          with:
+            node-version: '24'
+
+        - name: Install dependencies
+          run: npm install
+
+        - name: Build app
+          run: npm run build
+
+        - name: Upload artifact
+          uses: actions/upload-artifact@v3
+          with:
+            name: next-app-build
+            path: |
+              .next/standalone
+              public/
+              package.json
+              .node-version
+            retention-days: 5
+
+        - name: Create Release
+          uses: softprops/action-gh-release@v1
+          if: startsWith(github.ref, 'refs/tags/')
+          with:
+            files: next-app-build.tar.gz
